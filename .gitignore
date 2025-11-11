@@ -2,6 +2,8 @@
 __pycache__/
 *.py[codz]
 *$py.class
+merged_data.xlsx
+test.py
 
 # C extensions
 *.so
