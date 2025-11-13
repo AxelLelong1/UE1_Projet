@@ -47,7 +47,6 @@ def plot_global_acte_per_year(df: pd.DataFrame):
 
     plt.figure(figsize=(10, 6))
     bars = plt.bar(total_per_year['year'], total_per_year['nb_actes'], color='skyblue', edgecolor='black', linewidth=0.8)
-
     # Adding value labels on top of each bar
     for bar in bars:
 
@@ -72,6 +71,53 @@ def plot_global_acte_per_year(df: pd.DataFrame):
     
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.show()
+
+def plot_stacked_acte_per_year(df: pd.DataFrame):
+    """Plot stacked bar chart of number of actes per year per acte type."""
+
+    # Group by year and acte
+    summary = df.groupby(['year', 'acte'])['nb_actes'].sum().reset_index()
+
+    # Pivot for stacked bars
+    pivot_df = summary.pivot(index='year', columns='acte', values='nb_actes').fillna(0)
+
+    # Colors (one per acte)
+    colors = plt.cm.tab20.colors  # up to 20 actes, adjust if needed
+
+    # Plot stacked bars
+    ax = pivot_df.plot(kind='bar', stacked=True, figsize=(12, 6), color=colors, edgecolor='black', linewidth=0.8)
+    year_totals = pivot_df.sum(axis=1)
+
+    # Add value labels on each segment
+    for p in ax.patches:
+        height = p.get_height()
+        if height > 0:  # only label non-zero segments
+             # Find the year index based on bar position
+            year_idx = int(p.get_x() + p.get_width() / 2)
+            # Get corresponding year total
+            year_label = pivot_df.index[year_idx]
+            total = year_totals.loc[year_label]
+            # Compute percentage
+            percentage = (height / total) * 100 if total > 0 else 0
+
+            ax.text(p.get_x() + p.get_width()/2, 
+                    p.get_y() + height/2,
+                    f'{percentage:.1f}%',
+                    ha='center',
+                    va='center',
+                    fontsize=8,
+                    color='white')
+    
+    plt.title("Nombre d'actes par année et par type d'acte", fontsize=14, fontweight='bold', pad=15)
+    plt.xlabel("Année", fontsize=12)
+    plt.ylabel("Nombre d'actes", fontsize=12)
+    plt.xticks(fontsize=10)
+    plt.yticks(fontsize=10)
+    plt.grid(True, linestyle='--', alpha=0.4)
+    plt.legend(title='Acte', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
 
 def plot_actes_per_year(df : pd.DataFrame):
     """Plot the total number of actes for each acte type per year."""
